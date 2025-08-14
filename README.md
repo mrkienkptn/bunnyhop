@@ -1,6 +1,6 @@
 # BunnyHop
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/vanduc0209/bunnyhop)](https://goreportcard.com/report/github.com/vanduc0209/go-httpx)
+[![Go Report Card](https://goreportcard.com/badge/github.com/vanduc0209/bunnyhop)](https://goreportcard.com/report/github.com/vanduc0209/bunnyhop)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/vanduc0209/bunnyhop)](https://go.dev/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
