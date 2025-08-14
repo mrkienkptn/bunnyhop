@@ -169,15 +169,16 @@ func (c *Client) handleDisconnection() {
 // reconnect thực hiện reconnect
 func (c *Client) reconnect() {
 	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	if c.connected {
+		c.mutex.Unlock()
 		return
 	}
 
 	c.reconnectAttempts++
 	if c.reconnectAttempts > c.config.MaxReconnectAttempt {
 		c.logger().Error("Max reconnection attempts reached")
+		c.mutex.Unlock()
 		return
 	}
 
@@ -193,9 +194,7 @@ func (c *Client) reconnect() {
 		c.channel = nil
 	}
 
-	// Chờ một chút trước khi thử lại
-	time.Sleep(c.config.ReconnectInterval)
-
+	c.mutex.Unlock()
 	// Thử kết nối lại
 	if err := c.Connect(c.ctx); err != nil {
 		c.logger().Error("Reconnection failed: %v", err)
