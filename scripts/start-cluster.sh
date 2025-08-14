@@ -10,11 +10,11 @@ fi
 
 # Stop any existing containers
 echo "🛑 Stopping existing containers..."
-docker-compose -f docker-compose.cluster.yml down
+docker-compose -f docker/docker-compose.cluster.yml down
 
 # Start cluster
 echo "📦 Starting RabbitMQ cluster..."
-docker-compose -f docker-compose.cluster.yml up -d
+docker-compose -f docker/docker-compose.cluster.yml up -d
 
 # Wait for cluster to be ready
 echo "⏳ Waiting for RabbitMQ cluster to be ready..."
@@ -22,7 +22,7 @@ echo "   This may take up to 2 minutes for all nodes to join the cluster..."
 sleep 90
 
 # Check if cluster is running
-if docker-compose -f docker-compose.cluster.yml ps | grep -q "Up"; then
+if docker-compose -f docker/docker-compose.cluster.yml ps | grep -q "Up"; then
     echo "✅ RabbitMQ cluster is running!"
     echo ""
     echo "📋 Connection details:"
@@ -35,13 +35,13 @@ if docker-compose -f docker-compose.cluster.yml ps | grep -q "Up"; then
     echo "  Management UI: http://localhost:15670"
     echo "  Stats: http://localhost:8404 (admin/admin123)"
     echo ""
-    echo "🔍 Check status: docker-compose -f docker-compose.cluster.yml ps"
-    echo "📝 View logs: docker-compose -f docker-compose.cluster.yml logs -f"
-    echo "🛑 Stop: docker-compose -f docker-compose.cluster.yml down"
+    echo "🔍 Check status: docker-compose -f docker/docker-compose.cluster.yml ps"
+    echo "📝 View logs: docker-compose -f docker/docker-compose.cluster.yml logs -f"
+    echo "🛑 Stop: docker-compose -f docker/docker-compose.cluster.yml down"
     echo ""
     echo "🧪 Test the cluster: go run example/main.go"
 else
     echo "❌ Failed to start RabbitMQ cluster. Check logs:"
-    docker-compose -f docker-compose.cluster.yml logs
+    docker-compose -f docker/docker-compose.cluster.yml logs
     exit 1
 fi 

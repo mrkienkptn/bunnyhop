@@ -134,8 +134,8 @@ services:
   # Test client for cluster
   test-client:
     build:
-      context: .
-      dockerfile: Dockerfile.test
+      context: ..
+      dockerfile: docker/Dockerfile.test
     container_name: test-client-cluster
     depends_on:
       rabbitmq1:

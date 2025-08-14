@@ -53,7 +53,7 @@ These will be automatically downloaded when you run `go mod download`.
 
 ```bash
 # Start a single RabbitMQ node
-docker-compose -f docker-compose.single.yml up -d
+docker-compose -f docker/docker-compose.single.yml up -d
 
 # Or use the provided script
 chmod +x scripts/start-single.sh
@@ -64,7 +64,7 @@ chmod +x scripts/start-single.sh
 
 ```bash
 # Start a 3-node cluster
-docker-compose -f docker-compose.cluster.yml up -d
+docker-compose -f docker/docker-compose.cluster.yml up -d
 
 # Or use the provided script
 chmod +x scripts/start-cluster.sh

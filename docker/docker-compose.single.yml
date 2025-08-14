@@ -31,8 +31,8 @@ services:
   # Optional: Add a simple test client
   test-client:
     build:
-      context: .
-      dockerfile: Dockerfile.test
+      context: ..
+      dockerfile: docker/Dockerfile.test
     container_name: test-client
     depends_on:
       rabbitmq:

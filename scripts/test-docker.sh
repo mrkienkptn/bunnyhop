@@ -39,14 +39,14 @@ echo ""
 print_status "Testing Single Node Setup..."
 print_status "Starting single RabbitMQ node..."
 
-docker-compose -f docker-compose.single.yml up -d
+docker-compose -f docker/docker-compose.single.yml up -d
 
 # Wait for RabbitMQ to be ready
 print_status "Waiting for RabbitMQ to be ready..."
 sleep 15
 
 # Check if RabbitMQ is running
-if docker-compose -f docker-compose.single.yml ps | grep -q "Up"; then
+if docker-compose -f docker/docker-compose.single.yml ps | grep -q "Up"; then
     print_success "Single RabbitMQ node is running!"
     
     # Test the library
@@ -60,20 +60,20 @@ if docker-compose -f docker-compose.single.yml ps | grep -q "Up"; then
     fi
 else
     print_error "Failed to start single RabbitMQ node"
-    docker-compose -f docker-compose.single.yml logs
+    docker-compose -f docker/docker-compose.single.yml logs
     exit 1
 fi
 
 # Stop single node
 print_status "Stopping single node..."
-docker-compose -f docker-compose.single.yml down
+docker-compose -f docker/docker-compose.single.yml down
 
 # Test 2: Cluster
 echo ""
 print_status "Testing Cluster Setup..."
 print_status "Starting 3-node RabbitMQ cluster..."
 
-docker-compose -f docker-compose.cluster.yml up -d
+docker-compose -f docker/docker-compose.cluster.yml up -d
 
 # Wait for cluster to be ready
 print_status "Waiting for RabbitMQ cluster to be ready..."
@@ -81,12 +81,12 @@ print_status "This may take up to 2 minutes for all nodes to join the cluster...
 sleep 90
 
 # Check if cluster is running
-if docker-compose -f docker-compose.cluster.yml ps | grep -q "Up"; then
+if docker-compose -f docker/docker-compose.cluster.yml ps | grep -q "Up"; then
     print_success "3-node RabbitMQ cluster is running!"
     
     # Show cluster status
     print_status "Cluster status:"
-    docker-compose -f docker-compose.cluster.yml ps
+    docker-compose -f docker/docker-compose.cluster.yml ps
     
     # Test the library with cluster
     print_status "Testing library with cluster..."
@@ -103,7 +103,7 @@ if docker-compose -f docker-compose.cluster.yml ps | grep -q "Up"; then
     
 else
     print_error "Failed to start RabbitMQ cluster"
-    docker-compose -f docker-compose.cluster.yml logs
+    docker-compose -f docker/docker-compose.cluster.yml logs
     exit 1
 fi
 

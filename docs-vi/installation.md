@@ -53,7 +53,7 @@ Các dependencies này sẽ được tải tự động khi bạn chạy `go mod
 
 ```bash
 # Khởi động một node RabbitMQ
-docker-compose -f docker-compose.single.yml up -d
+docker-compose -f docker/docker-compose.single.yml up -d
 
 # Hoặc sử dụng script có sẵn
 chmod +x scripts/start-single.sh
@@ -64,7 +64,7 @@ chmod +x scripts/start-single.sh
 
 ```bash
 # Khởi động cluster 3 node
-docker-compose -f docker-compose.cluster.yml up -d
+docker-compose -f docker/docker-compose.cluster.yml up -d
 
 # Hoặc sử dụng script có sẵn
 chmod +x scripts/start-cluster.sh

@@ -143,7 +143,7 @@ chmod +x scripts/start-single.sh
 ./scripts/start-single.sh
 
 # Or manually
-docker-compose -f docker-compose.single.yml up -d
+docker-compose -f docker/docker-compose.single.yml up -d
 ```
 
 **Access:**
@@ -163,7 +163,7 @@ chmod +x scripts/start-cluster.sh
 ./scripts/start-cluster.sh
 
 # Or manually
-docker-compose -f docker-compose.cluster.yml up -d
+docker-compose -f docker/docker-compose.cluster.yml up -d
 ```
 
 **Access:**
@@ -376,7 +376,10 @@ bunnyhop/
 ├── integration_test.go    # Integration tests
 ├── example/               # Usage examples
 ├── scripts/               # Shell scripts for Docker management
-├── docker-compose.*.yml   # Docker Compose configurations
+├── docker/                 # Docker configurations
+│   ├── docker-compose.*.yml   # Docker Compose configurations
+│   ├── Dockerfile.test        # Dockerfile for test client
+│   └── haproxy.cfg            # HAProxy configuration
 ├── haproxy.cfg            # HAProxy configuration for cluster
 ├── Dockerfile.test        # Dockerfile for test client
 ├── Makefile               # Build and management commands

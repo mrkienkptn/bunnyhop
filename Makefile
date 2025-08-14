@@ -31,14 +31,14 @@ clean:
 
 # Start single RabbitMQ node
 docker-single:
-	docker-compose -f docker-compose.single.yml up -d
+	docker-compose -f docker/docker-compose.single.yml up -d
 	@echo "Single RabbitMQ node started at:"
 	@echo "  AMQP: localhost:5672"
 	@echo "  Management UI: http://localhost:15672 (guest/guest)"
 
 # Start 3-node RabbitMQ cluster
 docker-cluster:
-	docker-compose -f docker-compose.cluster.yml up -d
+	docker-compose -f docker/docker-compose.cluster.yml up -d
 	@echo "3-node RabbitMQ cluster started at:"
 	@echo "  Node 1 - AMQP: localhost:5672, Management: http://localhost:15672"
 	@echo "  Node 2 - AMQP: localhost:5673, Management: http://localhost:15673"
@@ -48,13 +48,13 @@ docker-cluster:
 
 # Stop all Docker containers
 docker-stop:
-	docker-compose -f docker-compose.single.yml down
-	docker-compose -f docker-compose.cluster.yml down
+	docker-compose -f docker/docker-compose.single.yml down
+	docker-compose -f docker/docker-compose.cluster.yml down
 
 # Clean Docker containers and volumes
 docker-clean:
-	docker-compose -f docker-compose.single.yml down -v
-	docker-compose -f docker-compose.cluster.yml down -v
+	docker-compose -f docker/docker-compose.single.yml down -v
+	docker-compose -f docker/docker-compose.cluster.yml down -v
 	docker system prune -f
 
 # Show running containers
@@ -63,11 +63,11 @@ docker-ps:
 
 # Show logs for single node
 docker-logs-single:
-	docker-compose -f docker-compose.single.yml logs -f
+	docker-compose -f docker/docker-compose.single.yml logs -f
 
 # Show logs for cluster
 docker-logs-cluster:
-	docker-compose -f docker-compose.cluster.yml logs -f
+	docker-compose -f docker/docker-compose.cluster.yml logs -f
 
 # Test the library with single node
 test-single: docker-single

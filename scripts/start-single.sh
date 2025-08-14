@@ -10,18 +10,18 @@ fi
 
 # Stop any existing containers
 echo "🛑 Stopping existing containers..."
-docker-compose -f docker-compose.single.yml down
+docker-compose -f docker/docker-compose.single.yml down
 
 # Start single node
 echo "📦 Starting RabbitMQ single node..."
-docker-compose -f docker-compose.single.yml up -d
+docker-compose -f docker/docker-compose.single.yml up -d
 
 # Wait for RabbitMQ to be ready
 echo "⏳ Waiting for RabbitMQ to be ready..."
 sleep 10
 
 # Check if RabbitMQ is running
-if docker-compose -f docker-compose.single.yml ps | grep -q "Up"; then
+if docker-compose -f docker/docker-compose.single.yml ps | grep -q "Up"; then
     echo "✅ RabbitMQ single node is running!"
     echo ""
     echo "📋 Connection details:"
@@ -30,11 +30,11 @@ if docker-compose -f docker-compose.single.yml ps | grep -q "Up"; then
     echo "  Username: guest"
     echo "  Password: guest"
     echo ""
-    echo "🔍 Check status: docker-compose -f docker-compose.single.yml ps"
-    echo "📝 View logs: docker-compose -f docker-compose.single.yml logs -f"
-    echo "🛑 Stop: docker-compose -f docker-compose.single.yml down"
+    echo "🔍 Check status: docker-compose -f docker/docker-compose.single.yml ps"
+    echo "📝 View logs: docker-compose -f docker/docker-compose.single.yml logs -f"
+    echo "🛑 Stop: docker-compose -f docker/docker-compose.single.yml down"
 else
     echo "❌ Failed to start RabbitMQ. Check logs:"
-    docker-compose -f docker-compose.single.yml logs
+    docker-compose -f docker/docker-compose.single.yml logs
     exit 1
 fi 
