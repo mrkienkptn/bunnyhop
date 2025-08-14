@@ -31,15 +31,13 @@ type Client struct {
 	reconnectTicker   *time.Ticker
 	connectionErrors  chan *amqp.Error
 	channelErrors     chan *amqp.Error
+	reconnecting      bool
 }
 
 // NewClient tạo client mới
 func NewClient(config Config) *Client {
 	if config.ReconnectInterval == 0 {
-		config.ReconnectInterval = 5 * time.Second
-	}
-	if config.MaxReconnectAttempt == 0 {
-		config.MaxReconnectAttempt = 10
+		config.ReconnectInterval = 30 * time.Second
 	}
 	if config.Logger == nil {
 		config.Logger = NewDefaultLogger(config.DebugLog)
@@ -53,6 +51,7 @@ func NewClient(config Config) *Client {
 		cancel:           cancel,
 		connectionErrors: make(chan *amqp.Error, 1),
 		channelErrors:    make(chan *amqp.Error, 1),
+		reconnecting:     false,
 	}
 }
 
@@ -114,6 +113,7 @@ func (c *Client) connectToURL(url string) error {
 	c.channel = ch
 	c.connected = true
 	c.reconnectAttempts = 0
+	c.reconnecting = false
 
 	// Thiết lập error handlers
 	c.setupErrorHandlers()
@@ -157,7 +157,13 @@ func (c *Client) reconnectWorker() {
 // handleDisconnection xử lý khi mất kết nối
 func (c *Client) handleDisconnection() {
 	c.mutex.Lock()
+	// Kiểm tra xem đã đang reconnect chưa
+	if c.reconnecting {
+		c.mutex.Unlock()
+		return
+	}
 	c.connected = false
+	c.reconnecting = true
 	c.mutex.Unlock()
 
 	c.logger().Warn("Connection lost, attempting to reconnect...")
@@ -171,13 +177,15 @@ func (c *Client) reconnect() {
 	c.mutex.Lock()
 
 	if c.connected {
+		c.reconnecting = false
 		c.mutex.Unlock()
 		return
 	}
 
 	c.reconnectAttempts++
-	if c.reconnectAttempts > c.config.MaxReconnectAttempt {
+	if c.config.MaxReconnectAttempt != 0 && c.reconnectAttempts > c.config.MaxReconnectAttempt {
 		c.logger().Error("Max reconnection attempts reached")
+		c.reconnecting = false
 		c.mutex.Unlock()
 		return
 	}
@@ -195,6 +203,8 @@ func (c *Client) reconnect() {
 	}
 
 	c.mutex.Unlock()
+	// Chờ một chút trước khi thử lại
+	time.Sleep(c.config.ReconnectInterval)
 	// Thử kết nối lại
 	if err := c.Connect(c.ctx); err != nil {
 		c.logger().Error("Reconnection failed: %v", err)
@@ -262,6 +272,7 @@ func (c *Client) Close() error {
 	}
 
 	c.connected = false
+	c.reconnecting = false
 
 	if len(errs) > 0 {
 		return fmt.Errorf("errors during close: %v", errs)
