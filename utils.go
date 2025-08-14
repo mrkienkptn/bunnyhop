@@ -10,10 +10,7 @@ func getDefaultConfig(config *PoolConfig) {
 	}
 
 	if config.ReconnectInterval == 0 {
-		config.ReconnectInterval = 5 * time.Second
-	}
-	if config.MaxReconnectAttempt == 0 {
-		config.MaxReconnectAttempt = 10
+		config.ReconnectInterval = 30 * time.Second
 	}
 	if config.HealthCheckInterval == 0 {
 		config.HealthCheckInterval = 30 * time.Second
