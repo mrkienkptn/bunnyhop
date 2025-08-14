@@ -1,0 +1,172 @@
+version: '3.8'
+
+services:
+  # Node 1 - Main node
+  rabbitmq1:
+    image: rabbitmq:3.12-management
+    container_name: rabbitmq-node1
+    hostname: rabbitmq-node1
+    ports:
+      - "5672:5672"      # AMQP port
+      - "15672:15672"    # Management UI port
+      - "15692:15692"    # Prometheus metrics port
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_DEFAULT_VHOST=/
+      - RABBITMQ_ERLANG_COOKIE=SWQOKODSQALRPCLNMEQG
+      - RABBITMQ_NODENAME=rabbit@rabbitmq-node1
+    volumes:
+      - rabbitmq1_data:/var/lib/rabbitmq
+      - rabbitmq1_logs:/var/log/rabbitmq
+    networks:
+      - rabbitmq-cluster
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  # Node 2 - Join cluster
+  rabbitmq2:
+    image: rabbitmq:3.12-management
+    container_name: rabbitmq-node2
+    hostname: rabbitmq-node2
+    ports:
+      - "5673:5672"      # AMQP port
+      - "15673:15672"    # Management UI port
+      - "15693:15692"    # Prometheus metrics port
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_DEFAULT_VHOST=/
+      - RABBITMQ_ERLANG_COOKIE=SWQOKODSQALRPCLNMEQG
+      - RABBITMQ_NODENAME=rabbit@rabbitmq-node2
+    volumes:
+      - rabbitmq2_data:/var/lib/rabbitmq
+      - rabbitmq2_logs:/var/log/rabbitmq
+    networks:
+      - rabbitmq-cluster
+    depends_on:
+      rabbitmq1:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    command: >
+      bash -c "
+        echo 'Waiting for node1 to be ready...' &&
+        sleep 30 &&
+        rabbitmqctl stop_app &&
+        rabbitmqctl reset &&
+        rabbitmqctl join_cluster rabbit@rabbitmq-node1 &&
+        rabbitmqctl start_app &&
+        rabbitmqctl set_policy ha-all '^ha\.' '{\"ha-mode\":\"all\",\"ha-sync-mode\":\"automatic\"}' &&
+        tail -f /dev/null
+      "
+
+  # Node 3 - Join cluster
+  rabbitmq3:
+    image: rabbitmq:3.12-management
+    container_name: rabbitmq-node3
+    hostname: rabbitmq-node3
+    ports:
+      - "5674:5672"      # AMQP port
+      - "15674:15672"    # Management UI port
+      - "15694:15692"    # Prometheus metrics port
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_DEFAULT_VHOST=/
+      - RABBITMQ_ERLANG_COOKIE=SWQOKODSQALRPCLNMEQG
+      - RABBITMQ_NODENAME=rabbit@rabbitmq-node3
+    volumes:
+      - rabbitmq3_data:/var/lib/rabbitmq
+      - rabbitmq3_logs:/var/log/rabbitmq
+    networks:
+      - rabbitmq-cluster
+    depends_on:
+      rabbitmq1:
+        condition: service_healthy
+      rabbitmq2:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    command: >
+      bash -c "
+        echo 'Waiting for other nodes to be ready...' &&
+        sleep 60 &&
+        rabbitmqctl stop_app &&
+        rabbitmqctl reset &&
+        rabbitmqctl join_cluster rabbit@rabbitmq-node1 &&
+        rabbitmqctl start_app &&
+        tail -f /dev/null
+      "
+
+  # HAProxy for load balancing
+  haproxy:
+    image: haproxy:2.8
+    container_name: rabbitmq-haproxy
+    ports:
+      - "5670:5670"      # Load balanced AMQP port
+      - "15670:15670"    # Load balanced Management UI port
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    networks:
+      - rabbitmq-cluster
+    depends_on:
+      - rabbitmq1
+      - rabbitmq2
+      - rabbitmq3
+    restart: unless-stopped
+
+  # Test client for cluster
+  test-client:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: test-client-cluster
+    depends_on:
+      rabbitmq1:
+        condition: service_healthy
+      rabbitmq2:
+        condition: service_healthy
+      rabbitmq3:
+        condition: service_healthy
+    environment:
+      - RABBITMQ_URLS=amqp://guest:guest@rabbitmq1:5672/,amqp://guest:guest@rabbitmq2:5672/,amqp://guest:guest@rabbitmq3:5672/
+    networks:
+      - rabbitmq-cluster
+    restart: "no"
+
+volumes:
+  rabbitmq1_data:
+    driver: local
+  rabbitmq1_logs:
+    driver: local
+  rabbitmq2_data:
+    driver: local
+  rabbitmq2_logs:
+    driver: local
+  rabbitmq3_data:
+    driver: local
+  rabbitmq3_logs:
+    driver: local
+
+networks:
+  rabbitmq-cluster:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16 
