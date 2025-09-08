@@ -1,4 +1,4 @@
-module github.com/vanduc0209/bunnyhop
+module github.com/mrkienkptn/bunnyhop
 
 go 1.23
 
